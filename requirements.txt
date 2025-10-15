@@ -1,0 +1,24 @@
+# Основные зависимости
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+pydantic==2.9.2
+
+# Обработка документов
+pypdf==4.3.1
+
+# LangChain + LangGraph
+langchain==0.3.7
+langgraph==0.2.43
+
+# LLM — ОПТИМИЗИРОВАННАЯ ВЕРСИЯ ДЛЯ CPU (AVX2, OpenBLAS)
+# Устанавливается отдельно (см. инструкцию ниже)
+
+# Валидация
+jsonschema==4.23.0
+
+# SSE для прогресса
+sse-starlette==2.1.4
+
+#
+sentencepiece==0.2.1
