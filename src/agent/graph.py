@@ -10,6 +10,19 @@ from src.agent.nodes import (
 )
 
 
+def should_edit_json(state: AgentState) -> str:
+    """
+    Определяет, нужно ли запускать редактирование JSON.
+    """
+    json_data = state.get("json_")
+    instruction = state.get("instruction")
+
+    if json_data and instruction:
+        return "edit"
+    else:
+        return "validate"
+
+
 def build_graph():
     workflow = StateGraph(AgentState)
     workflow.add_node("analyze", analyze_request_node)
@@ -21,10 +34,13 @@ def build_graph():
     workflow.set_entry_point("analyze")
     workflow.add_edge("analyze", "extract_pdf")
     workflow.add_edge("extract_pdf", "summarize")
-    workflow.add_edge("summarize", "edit")
-    workflow.add_edge("edit", "validate")
+    # workflow.add_edge("summarize", "edit")
+    # workflow.add_edge("edit", "validate")
     workflow.add_edge("validate", END)
-
+    workflow.add_conditional_edges(
+        "summarize", should_edit_json, {"edit": "edit", "validate": "validate"}
+    )
+    workflow.add_edge("edit", "validate")
     return workflow.compile()
 
 
