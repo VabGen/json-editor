@@ -32,6 +32,7 @@
 # uv pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
 # uv pip show llama-cpp-python
 
+
 # uv pip install -r requirements.txt
 
 # rmdir /s %USERPROFILE%\.cache\huggingface  # очистка кэша
