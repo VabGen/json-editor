@@ -5,9 +5,7 @@ from typing import TypedDict, Optional, Dict, Any
 
 class SummarizationRequest(BaseModel):
     text: Optional[str] = None
-    summarization_type: str = (
-        "extractive"  # "abstractive", "headlines" или "extractive"
-    )
+    summarization_type: str = "extractive"  # "abstractive", "headlines", "extractive"
 
 
 class AgentState(TypedDict, total=False):

@@ -23,6 +23,7 @@
 
 # pip uninstall llama-cpp-python -y
 # pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+# uv pip install llama-cpp-python --no-binary=llama-cpp-python --force-reinstall --no-cache-dir  (GPU)
 
 #   1. Установите всё из requirements.txt
 # uv pip install -r requirements.txt

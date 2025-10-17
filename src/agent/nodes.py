@@ -163,15 +163,14 @@ PDF: {state.get("pdf_text", "")}
 
         clean = raw_response.strip()
 
-        # --- УЛУЧШЕНИЕ НАЧАЛО ---
-        # 1. Проверка на пустой ответ
+        # Проверка на пустой ответ
         if not clean:
             error_msg = "Ошибка редактирования: Модель вернула пустой ответ."
             logger.error(error_msg)
             state["error"] = error_msg
             return state  # ВАЖНО: возвращаем state, если ошибка
 
-        # 2. Попытка извлечь JSON-объект из потенциально "обёрнутого" ответа
+        # Попытка извлечь JSON-объект из потенциально "обёрнутого" ответа
         # Ищем первый полноценный JSON-объект в строке
         json_match = re.search(
             r"\{.*\}", clean, re.DOTALL
@@ -186,14 +185,14 @@ PDF: {state.get("pdf_text", "")}
                 f"Объект {{}} не найден, используем весь очищенный ответ: '{potential_json_str}'"
             )
 
-        # 3. Проверка, что потенциальный JSON не пустой
+        # Проверка, что потенциальный JSON не пустой
         if not potential_json_str.strip():
             error_msg = "Ошибка редактирования: Модель не вернула валидный JSON. Извлечённая строка пуста."
             logger.error(error_msg)
             state["error"] = error_msg
             return state
 
-        # 4. Попытка распарсить найденную/исходную строку как JSON
+        # Попытка распарсить найденную/исходную строку как JSON
         try:
             parsed = json.loads(potential_json_str)
             logger.info("JSON успешно распарсен из ответа LLM.")
@@ -201,7 +200,7 @@ PDF: {state.get("pdf_text", "")}
             state["updated_json_str"] = potential_json_str
             state["final_json"] = parsed
         except json.JSONDecodeError as e:
-            # Специфическая обработка ошибки парсинга JSON
+            # Обработка ошибки парсинга JSON
             error_msg = (
                 f"Ошибка редактирования: Модель не вернула валидный JSON. "
                 f"Ошибка: {str(e)}. "
@@ -209,7 +208,6 @@ PDF: {state.get("pdf_text", "")}
             )
             logger.error(error_msg)
             state["error"] = error_msg
-        # --- УЛУЧШЕНИЕ КОНЕЦ ---
 
     except Exception as e:
         # Обработка любых других непредвиденных ошибок
@@ -226,7 +224,7 @@ def validate_node(state: AgentState) -> AgentState:
     Если был редактирование JSON, проверяет, не потеряны ли поля.
     Если была суммаризация или объяснение, просто возвращает состояние.
     """
-    # Если на предыдущих шагах была ошибка, просто передаем её дальше
+    # Если на предыдущих шагах была ошибка, передаем её дальше
     if state.get("error"):
         logger.debug("Обнаружена ошибка на предыдущем шаге, пропускаем валидацию.")
         return state
@@ -249,12 +247,8 @@ def validate_node(state: AgentState) -> AgentState:
         changed = {k: v for k, v in updated.items() if original.get(k) != v}
         logger.info(f"Изменённые поля: {list(changed.keys())}")
 
-    # Если была суммаризация или объяснение, результат в state["summary"]
-    # Валидация не требуется, просто возвращаем состояние.
-    # state["summary"] может быть строкой.
-
     logger.debug("Валидация пройдена успешно или не требуется.")
-    return state  # ВАЖНО: всегда возвращаем state
+    return state
 
 
 def explain_node(state: AgentState) -> AgentState:
@@ -267,11 +261,10 @@ def explain_node(state: AgentState) -> AgentState:
         return state  # ВАЖНО: всегда возвращаем state
 
     try:
-        local_llm = get_llm(max_tokens=512)  # Меньше токенов для краткого ответа
+        local_llm = get_llm(max_tokens=512)
         logger.debug("LLM для объяснения получена.")
 
         # Формируем промпт для LLM
-        # Передаём весь доступный контекст
         prompt = f"""Ты — эксперт по анализу данных. Ответь на вопрос пользователя ТОЛЬКО на основе предоставленного контекста.
 НЕ пытайся редактировать JSON. Просто дай текстовый ответ.
 
@@ -288,7 +281,7 @@ PDF ТЕКСТ:
 СУММАРИЗАЦИЯ PDF:
 {state.get("summary", "Нет суммаризации")}
 
-ОТВЕТ (только текст, без JSON, без пояснений):"""  # Уточняем формат ответа
+ОТВЕТ (только текст, без JSON, без пояснений):"""
         logger.debug(f"Сформированный промпт для объяснения.")
 
         # Вызываем LLM
@@ -298,18 +291,15 @@ PDF ТЕКСТ:
             f"Сгенерированное объяснение (первые 100 символов): {explanation[:100]}..."
         )
 
-        # Сохраняем объяснение в состоянии в поле summary
-        # Это соответствует тому, как работает summarize_node
         state["summary"] = explanation
         logger.info("Объяснение успешно сгенерировано и сохранено в state['summary'].")
 
     except Exception as e:
         # Обработка любых других непредвиденных ошибок
         error_msg = f"Ошибка генерации объяснения: {str(e)}"
-        logger.exception(error_msg)  # logger.exception записывает трассировку стека
+        logger.exception(error_msg)
         state["error"] = error_msg
 
-    # ВАЖНО: всегда возвращаем state, даже если была ошибка
     return state
 
 

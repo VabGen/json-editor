@@ -13,10 +13,6 @@ from src.agent.graph import agent_graph
 from src.agent.state import AgentState
 import src.agent.nodes
 
-# ======================
-#   Logging
-# ======================
-# Убедитесь, что логирование настроено в основном приложении
 logger = logging.getLogger(__name__)
 
 # ======================
@@ -105,7 +101,6 @@ async def process_request(
         raise HTTPException(500, f"Внутренняя ошибка агента: {str(e)}")
 
     # === 5. Формирование ответа ===
-    # Проверяем на ошибки
     if result_state.get("error"):
         logger.error(f"Ошибка агента: {result_state['error']}")
         raise HTTPException(500, result_state["error"])
@@ -120,7 +115,5 @@ async def process_request(
         logger.info("Возвращаем результат суммаризации или объяснения.")
         return {"summary": result_state["summary"]}
     else:
-        # На случай, если ни final_json, ни summary не были заполнены
-        # Хотя validate_node должен был поймать это, добавим страховку
         logger.warning("Агент не вернул ни final_json, ни summary.")
         return {"result": {}, "message": "Запрос обработан, но результат пуст."}
